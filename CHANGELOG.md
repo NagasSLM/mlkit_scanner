@@ -1,3 +1,9 @@
+## 0.6.1
+
+[fix]
+
+- Android: destroy the camera off the main thread to avoid ANRs when the scanner is closed
+
 ## 0.6.0
 
 [fix]

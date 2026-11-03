@@ -113,3 +113,29 @@ private fun calcAdaptiveOffsets(
     1 -> Pair(width / 2 * offsetWidth, height / 2 * offsetHeight)
     else -> Pair(width / 2 * -offsetHeight, height / 2 * -offsetWidth)
 }
+
+/**
+ * Detaches the [CameraView] from its lifecycle owner and starts closing the camera without waiting
+ *
+ * Used instead of moving the owner to DESTROYED, which makes [CameraView] call the blocking
+ * [CameraView.destroy] on the main thread.
+ */
+fun CameraView.closeAndDetach() {
+    setLifecycleOwner(null)
+    close()
+}
+
+/**
+ * Destroys the [CameraView] without blocking the main thread
+ *
+ * [CameraView.destroy] waits up to 6 seconds (and then retries) for the camera to close, which ends
+ * in an ANR on devices with a slow camera close. Listeners and frame processors are cleared on the
+ * caller's thread, so no callback reaches the plugin afterwards; the waiting part runs on a background
+ * thread. [CameraView] posts the preview removal back to the main thread by itself.
+ */
+fun CameraView.destroyInBackground() {
+    setLifecycleOwner(null)
+    clearCameraListeners()
+    clearFrameProcessors()
+    Thread({ destroy() }, "CameraViewDestroy").start()
+}

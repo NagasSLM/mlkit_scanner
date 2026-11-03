@@ -228,6 +228,10 @@ class MlkitScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Life
     }
 
     private fun invokeDispose(result: Result) {
+        // The platform view destroys the camera off the main thread, see [destroyInBackground]
+        if (::cameraView.isInitialized) {
+            cameraView.closeAndDetach()
+        }
         cameraLifecycle?.dispose()
         cameraLifecycle = null
         scannerOverlay = null
